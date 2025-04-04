@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/css/admin.common.css" />
+    <link rel="stylesheet" href="/css/admin.incomingnotification.css" />
+    <title>Notifications - Admin panel</title>
+    <style>
+      .attribution {
+        font-size: 11px;
+        text-align: center;
+      }
+
+      .attribution a {
+        color: hsl(228, 45%, 44%);
+      }
+    </style>
+  </head>
+
+  <body>
+    <aside class="sidebar">
+      <img id="logo" src="https://res.cloudinary.com/dozcrwtud/image/upload/v1743746754/White_Minimalist_Online_Fashion_Shop_Bag_Logo_1_od2d4q.png">  
+      <ul>
+        <li><a href="/admin/dashboard">Main Dashboard</a></li>
+        <li><a href="/admin/vendors">Vendor Details</a></li>
+        <li><a href="/admin/sales">Sales</a></li>
+        <li><a href="/admin/orders">Order Details</a></li>
+        <li><a href="/admin/pending-verification">pending verification</a></li>
+        <li><a href="/admin/offers">offers</a></li>
+        <li><a href="/admin/users">Users</a></li>
+        <li><a href="/admin/available-products">Available Products</a></li>
+        <li><a href="/admin/contacttovendor">contact to vendor</a></li>
+        <li><a href="/admin/notifications">notifications</a></li>
+      </ul>
+    </aside>
+    <div class="container">
+      <div class="app">
+        <div class="header">
+          <h2>
+            <span class="title">Notifications</span>
+            <span class="unread-notification-number" id="unreadno"></span>
+          </h2>
+          <p onclick="markallasread()">Mark all as read</p>
+        </div>
+        <div class="body">
+          <div class="notifications" id="notifications"></div>
+          <div class="readednotification" id="readednotification"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      async function markallasread() {
+        const response = await fetch("/admin/markallasread", {
+          method: "POST",
+        });
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+
+        const json = await response.json();
+        let results = json.message;
+        alert(results)
+        fetchreadnotifications()
+        fetchunreadnotifications()
+      }
+      async function fetchunreadnotifications() {
+        document.getElementById("notifications").innerHTML = ""
+        const response = await fetch("/admin/notificationsunreaded", {
+          method: "POST",
+        });
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+
+        const json = await response.json();
+        let results = json.data;
+        let container = document.getElementById("notifications");
+        document.getElementById("unreadno").innerText = results.length
+        results.forEach((result) => {
+          div = `<div class="notification unreaded" id="unread"><div class="avatar"><img src="/images/notification.png"></div>
+          <div class="text">
+            <div class="text-top">
+              <p><span class="profil-name"> ${result.notifictation_created_by} </span> ${result.notification_subject} <b> ${result.notifictation_content} </b><span class="unread-dot" onclick="markasreaded(${result.notifictation_id})" id="${result.notifictation_id})"></span></p>
+            </div>
+            <div class="text-bottom">${result.notifictation_created_at}</div>
+          </div></div>`;
+          container.innerHTML += div;
+        });
+      }
+      async function fetchreadnotifications() {
+        document.getElementById("readednotification").innerHTML = "";
+        const response = await fetch("/admin/notificationsreaded", {
+          method: "POST",
+        });
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+
+        const json = await response.json();
+        let results = json.data;
+        let notification = document.getElementById("readednotification");
+        results.forEach((result) => {
+          div = ` <div class="notification readed private-message">
+  <div class="avatar"><img src="/images/notification.png"></div>
+  <div class="text">
+    <div class="text-top">
+      <p><span class="profil-name"> ${result.notifictation_created_by} </span> ${result.notification_subject} <b> ${result.notifictation_content} </b><span></span></p>
+    </div>
+    <div class="text-bottom">${result.notifictation_created_at}</div>
+  </div></div>`;
+          notification.innerHTML += div;
+        });
+      }
+      fetchunreadnotifications();
+        fetchreadnotifications();
+    </script>
+    <script>
+      async function markasreaded(id) {
+        let formdata = new FormData();
+        formdata.append("id",id)
+        const response = await fetch("/admin/markasread", {
+          method: "POST",
+          body: formdata,
+        });
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+
+        const json = await response.json();
+        let results = json.message;
+        fetchunreadnotifications();
+        fetchreadnotifications()
+      }
+    </script>
+  </body>
+</html>

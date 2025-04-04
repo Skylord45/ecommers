@@ -1,0 +1,1 @@
+//validation for all type of users for accesing the protected routes
